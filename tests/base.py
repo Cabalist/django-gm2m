@@ -7,7 +7,7 @@ It takes care of resetting the models and databases for each Testcase
 
 import sys
 import os
-from imp import reload
+from importlib import reload
 import importlib
 from inspect import getfile
 from shutil import rmtree, copy
@@ -32,10 +32,10 @@ from .helpers import app_mod_path, del_app_models, reset_warning_registry
 __test__ = False
 __unittest = True
 
-NO_SETTING = ('!', None)
+NO_SETTING = ("!", None)
 
 
-class TestSettingsManager(object):
+class TestSettingsManager:
     """
     A class which can modify some Django settings temporarily for a
     test and then revert them to their original values later.
@@ -52,18 +52,16 @@ class TestSettingsManager(object):
             apps.populate(settings.INSTALLED_APPS)
 
         for k, v in kwargs.items():
-            self._original_settings.setdefault(k, getattr(settings,
-                                                          k, NO_SETTING))
+            self._original_settings.setdefault(k, getattr(settings, k, NO_SETTING))
             setattr(settings, k, v)
 
-        if 'INSTALLED_APPS' in kwargs:
-            apps.set_installed_apps(kwargs['INSTALLED_APPS'])
-            if kwargs.get('migrate', True):
+        if "INSTALLED_APPS" in kwargs:
+            apps.set_installed_apps(kwargs["INSTALLED_APPS"])
+            if kwargs.get("migrate", True):
                 self.migrate()
 
     def migrate(self):
-        for dicname in ('app_labels', 'app_store', 'handled',
-                        '_get_models_cache'):
+        for dicname in ("app_labels", "app_store", "handled", "_get_models_cache"):
             getattr(apps, dicname, {}).clear()
 
         apps.loaded = False
@@ -71,8 +69,7 @@ class TestSettingsManager(object):
         apps.nesting_level = 0
         apps.available_apps = None
 
-        call_command('migrate', run_syncdb=True,
-                     verbosity=0, interactive=False)
+        call_command("migrate", run_syncdb=True, verbosity=0, interactive=False)
 
     def revert(self, migrate=True):
         for k, v in self._original_settings.items():
@@ -81,7 +78,7 @@ class TestSettingsManager(object):
             else:
                 setattr(settings, k, v)
 
-        if 'INSTALLED_APPS' in self._original_settings:
+        if "INSTALLED_APPS" in self._original_settings:
             apps.unset_installed_apps()
             if migrate:
                 self.migrate()
@@ -89,11 +86,11 @@ class TestSettingsManager(object):
         self._original_settings = {}
 
 
-class Models(object):
+class Models:
     pass
 
 
-class _TestCase(object):
+class _TestCase:
     """
     A mixin for Django (Transaction)TestCase subclasses, with a settings_manager
     attribute which is an instance of TestSettingsManager.
@@ -108,7 +105,7 @@ class _TestCase(object):
 
     @classmethod
     def app_name(cls):
-        return cls.__module__.split('.')[1]
+        return cls.__module__.split(".")[1]
 
     @classmethod
     def invalidate_caches(cls):
@@ -124,10 +121,12 @@ class _TestCase(object):
 
     @classmethod
     def setUpClass(cls):
-
         cls.settings_manager = TestSettingsManager()
 
-        cls.inst_apps = ('app', cls.app_name(),) + cls.other_apps
+        cls.inst_apps = (
+            "app",
+            cls.app_name(),
+        ) + cls.other_apps
 
         # unloads the test.models module and test app to make sure no link
         # subsists from the previous test case
@@ -142,17 +141,18 @@ class _TestCase(object):
         importlib.import_module(app_mod_path(cls.inst_apps[1]))
         reload(sys.modules[cls.__module__])
 
-        cls.settings_manager.set(INSTALLED_APPS=settings.INSTALLED_APPS
-                                 + app_paths)
+        cls.settings_manager.set(INSTALLED_APPS=settings.INSTALLED_APPS + app_paths)
 
         # import the needed models
         cls.models = Models()
         for app_path in app_paths:
-            m = importlib.import_module(app_path + '.models')
+            m = importlib.import_module(app_path + ".models")
             for mod_name in dir(m):
                 model = getattr(m, mod_name)
-                if isinstance(model, models.base.ModelBase) \
-                and not model._meta.abstract:
+                if (
+                    isinstance(model, models.base.ModelBase)
+                    and not model._meta.abstract
+                ):
                     setattr(cls.models, mod_name, model)
 
     @classmethod
@@ -166,19 +166,18 @@ class _TestCase(object):
 
     def run(self, result=None):
         with reset_warning_registry():
-            return super(_TestCase, self).run(result)
+            return super().run(result)
 
 
 class TestCase(_TestCase, test.TestCase):
-
     def test_deconstruct(self):
         # this test will run on *all* testcases having no subclasses
 
         if self.__class__.__subclasses__():
-            return skip('not an end test class')
+            return skip("not an end test class")
 
         try:
-            field = self.links.__class__._meta.get_field('related_objects')
+            field = self.links.__class__._meta.get_field("related_objects")
         except AttributeError:
             return
 
@@ -187,17 +186,21 @@ class TestCase(_TestCase, test.TestCase):
 
         # just checking the strings output, as for an attr to attr comparison
         # we would need to run contribute_to_class
-        self.assertSetEqual(set(['%s.%s' % (r.model._meta.app_label,
-                                            r.model._meta.object_name)
-                                 for r in field.remote_field.rels
-                                 if not getattr(r, '_added', False)]),
-                            set(args))
+        self.assertSetEqual(
+            set(
+                [
+                    f"{r.model._meta.app_label}.{r.model._meta.object_name}"
+                    for r in field.remote_field.rels
+                    if not getattr(r, "_added", False)
+                ]
+            ),
+            set(args),
+        )
 
     def test_check(self):
         with warnings.catch_warnings():
-            warnings.filterwarnings('error',
-                                    category=RemovedInNextVersionWarning)
-            call_command('check')
+            warnings.filterwarnings("error", category=RemovedInNextVersionWarning)
+            call_command("check")
 
 
 class MigrationsTestCase(_TestCase, test.TransactionTestCase):
@@ -207,16 +210,16 @@ class MigrationsTestCase(_TestCase, test.TransactionTestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(MigrationsTestCase, cls).setUpClass()
-        cls.migrations_dir = os.path.join(os.path.dirname(getfile(cls)),
-                                          'migrations')
-        cls.migrations_module = '.'.join(cls.__module__.split('.')[:-1]
-                                         + ['migrations'])
+        super().setUpClass()
+        cls.migrations_dir = os.path.join(os.path.dirname(getfile(cls)), "migrations")
+        cls.migrations_module = ".".join(
+            cls.__module__.split(".")[:-1] + ["migrations"]
+        )
 
     def _post_teardown(self):
         # revert migrations, if any
         if os.path.exists(self.migrations_dir):
-            self.migrate(to='0001_initial')
+            self.migrate(to="0001_initial")
 
         ct.ContentType.objects.clear_cache()
 
@@ -226,8 +229,9 @@ class MigrationsTestCase(_TestCase, test.TransactionTestCase):
         try:
             try:
                 mig_modules += [
-                    self.migrations_module + '.' + os.path.splitext(m)[0]
-                    for m in os.listdir(mig_dir) if m != '__init__.py'
+                    self.migrations_module + "." + os.path.splitext(m)[0]
+                    for m in os.listdir(mig_dir)
+                    if m != "__init__.py"
                 ]
             except OSError:
                 pass
@@ -238,22 +242,22 @@ class MigrationsTestCase(_TestCase, test.TransactionTestCase):
                 except KeyError:
                     pass
 
-            for d in (mig_dir, mig_dir + '_bak'):
+            for d in (mig_dir, mig_dir + "_bak"):
                 try:
                     rmtree(d)
                 except OSError:
                     pass
         finally:
-            super(MigrationsTestCase, self)._post_teardown()
+            super()._post_teardown()
 
-    def get_migration_content(self, module='0001_initial'):
-        f = open(os.path.join(self.migrations_dir, module + '.py'))
+    def get_migration_content(self, module="0001_initial"):
+        f = open(os.path.join(self.migrations_dir, module + ".py"))
         s = f.read()
         f.close()
         return s
 
     def makemigrations(self):
-        call_command('makemigrations', self.app_name())
+        call_command("makemigrations", self.app_name())
         # new modules have been created, sys.meta_path caches must be cleared
         self.invalidate_caches()
 
@@ -268,8 +272,9 @@ class MigrationsTestCase(_TestCase, test.TransactionTestCase):
 
         # we need to use fake_initial as the database has already been
         # initialized and is in the state of the initial migration
-        call_command('migrate', *args, verbosity=0, interactive=False,
-                     fake_initial=True)
+        call_command(
+            "migrate", *args, verbosity=0, interactive=False, fake_initial=True
+        )
 
 
 class MultiMigrationsTestCase(MigrationsTestCase):
@@ -279,10 +284,10 @@ class MultiMigrationsTestCase(MigrationsTestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(MultiMigrationsTestCase, cls).setUpClass()
+        super().setUpClass()
         directory = os.path.dirname(getfile(cls))
-        cls.models_path = os.path.join(directory, 'models.py')
-        cls.backup_path = os.path.join(directory, 'models.py.bak')
+        cls.models_path = os.path.join(directory, "models.py")
+        cls.backup_path = os.path.join(directory, "models.py.bak")
         try:
             os.remove(cls.backup_path)
         except OSError:
@@ -292,10 +297,10 @@ class MultiMigrationsTestCase(MigrationsTestCase):
         # creates a backup copy of the models module
         os.rename(self.models_path, self.backup_path)
         copy(self.backup_path, self.models_path)
-        super(MultiMigrationsTestCase, self)._pre_setup()
+        super()._pre_setup()
 
     def _post_teardown(self):
-        super(MultiMigrationsTestCase, self)._post_teardown()
+        super()._post_teardown()
         # restores the backup copy
         os.remove(self.models_path)
         os.rename(self.backup_path, self.models_path)
@@ -306,9 +311,9 @@ class MultiMigrationsTestCase(MigrationsTestCase):
         """
         Carries out a search and replace on the models module
         """
-        with open(self.models_path, 'rt') as fh:
+        with open(self.models_path, "rt") as fh:
             code = fh.read()
-        with open(self.models_path, 'w') as fh:
+        with open(self.models_path, "w") as fh:
             fh.write(code.replace(old_str, new_str))
         self.reload_apps()
 
@@ -324,5 +329,6 @@ class MultiMigrationsTestCase(MigrationsTestCase):
         ct.ContentType.objects.clear_cache()
 
         app_paths = tuple([app_mod_path(app) for app in cls.inst_apps])
-        cls.settings_manager.set(INSTALLED_APPS=settings.INSTALLED_APPS
-                                 + app_paths, migrate=False)
+        cls.settings_manager.set(
+            INSTALLED_APPS=settings.INSTALLED_APPS + app_paths, migrate=False
+        )

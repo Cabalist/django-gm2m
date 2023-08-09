@@ -3,8 +3,7 @@ Generic many-to-many relations descriptors
 """
 
 
-class GM2MDescriptor(object):
-
+class GM2MDescriptor:
     def __init__(self, field):
         self.field = field
 
@@ -17,9 +16,10 @@ class GM2MDescriptor(object):
         if not self.through._meta.auto_created:
             opts = self.through._meta
             raise AttributeError(
-                'Cannot set values on a GM2MField which specifies an '
-                'intermediary model. Use %s.%s\'s Manager instead.'
-                % (opts.app_label, opts.object_name))
+                f"Cannot set values on a GM2MField which "
+                f"specifies an intermediary model. "
+                f"Use {opts.app_label}.{opts.object_name}'s Manager instead."
+            )
         manager = self.__get__(instance)
         manager.set(value)
 
@@ -31,7 +31,7 @@ class RelatedGM2MDescriptor(GM2MDescriptor):
     """
 
     def __init__(self, related, remote_field):
-        super(RelatedGM2MDescriptor, self).__init__(related)
+        super().__init__(related)
         self.remote_field = remote_field
 
     @property
@@ -68,4 +68,4 @@ class SourceGM2MDescriptor(GM2MDescriptor):
         # clear() can change expected output of 'value' queryset,
         # we force evaluation of queryset before clear; django ticket #19816
         value = tuple(value)
-        super(SourceGM2MDescriptor, self).__set__(instance, value)
+        super().__set__(instance, value)

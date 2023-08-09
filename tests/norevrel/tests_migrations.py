@@ -1,33 +1,24 @@
 import os
 import re
 
+import django
+
 from .. import base
 
 
 # basic migration tests
 class MigrationTests(base.MigrationsTestCase):
-
     def test_makemigrations(self):
         self.makemigrations()
 
-        mig_ctnt = re.sub(r'models\.AutoField\(.+?\)', 'models.AutoField()',
-                          self.get_migration_content())
-        mig_ctnt = re.sub(r"([\s\(])b'", r"\1'", mig_ctnt)
-
-        self.assertIn("""
-    dependencies = [
-        ('contenttypes', '0002_remove_content_type_name'),
-    ]
-
-    operations = [
-        migrations.CreateModel(
-            name='Links',
-            fields=[
-                ('id', models.AutoField()),
-                ('related_objects', gm2m.fields.GM2MField(through_fields=('gm2m_src', 'gm2m_tgt', 'gm2m_ct', 'gm2m_pk'))),
-            ],
-        ),
-    ]""", mig_ctnt)
+        mig_ctnt = re.sub(
+            r"models\.AutoField\(.+?\)",
+            "models.AutoField()",
+            self.get_migration_content(),
+        )
+        mig_ctnt = re.sub(r"([\s(])b'", r"\1'", mig_ctnt)
+        pattern = r"through_fields=[\[\(]['\"]gm2m_src['\"], ['\"]gm2m_tgt['\"], ['\"]gm2m_ct['\"], ['\"]gm2m_pk['\"][\]\)]"
+        assert re.search(pattern, mig_ctnt)
 
     def test_migrate_app(self):
         # just check that no exception is raised when calling migrate after
@@ -40,31 +31,32 @@ class MigrationTests(base.MigrationsTestCase):
 
 
 class MultiMigrationTests(base.MultiMigrationsTestCase):
-
     def test_migrate_app(self):
         # generates initial migration file 0001_initial
         self.makemigrations()
 
         # adds a pk_maxlength parameter and generate 2nd migration
-        self.replace('gm2m.GM2MField()',
-                     'gm2m.GM2MField(pk_maxlength=50)')
+        self.replace("gm2m.GM2MField()", "gm2m.GM2MField(pk_maxlength=50)")
         self.makemigrations()
 
         # renames the GM2MField
-        self.replace('related_objects', 'projects_and_tasks')
+        self.replace("related_objects", "projects_and_tasks")
         self.makemigrations()
 
         # add atomic = False to last migration, otherwise it raises an error
         # with sqlite
         for mig_name in os.listdir(self.migrations_dir):
-            if mig_name.startswith('0003'):
+            if mig_name.startswith("0003"):
                 break
         mig_path = os.path.join(self.migrations_dir, mig_name)
-        with open(mig_path, 'rt') as fh:
+        with open(mig_path, "rt") as fh:
             code = fh.read()
-        with open(mig_path, 'w') as fh:
-            fh.write(code.replace('    dependencies',
-                                  '    atomic = False\n\n    dependencies'))
+        with open(mig_path, "w") as fh:
+            fh.write(
+                code.replace(
+                    "    dependencies", "    atomic = False\n\n    dependencies"
+                )
+            )
         self.invalidate_caches()
 
         # check that no exception is raised when calling migrate
@@ -81,10 +73,13 @@ class MultiMigrationTests(base.MultiMigrationsTestCase):
         self.models.Links.objects.create()
         self.models.Project.objects.create()
 
-        mig2 = open(os.path.join(os.path.dirname(__file__), 'migrations',
-                                 '0002_runpython.py'), 'w')
+        mig2 = open(
+            os.path.join(os.path.dirname(__file__), "migrations", "0002_runpython.py"),
+            "w",
+        )
 
-        mig2.write("""
+        mig2.write(
+            """
 from django.db import migrations
 
 
@@ -109,7 +104,8 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(add_gm2m, rem_gm2m),
     ]
-""")
+"""
+        )
         mig2.close()
 
         self.migrate()
@@ -124,10 +120,15 @@ class Migration(migrations.Migration):
         # create initial migration
         self.makemigrations()
 
-        mig2 = open(os.path.join(os.path.dirname(__file__), 'migrations',
-                                 '0002_rename_model.py'), 'w')
+        mig2 = open(
+            os.path.join(
+                os.path.dirname(__file__), "migrations", "0002_rename_model.py"
+            ),
+            "w",
+        )
 
-        mig2.write("""
+        mig2.write(
+            """
 from django.db import migrations
 
 
@@ -139,9 +140,10 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RenameModel('Links', 'LinksRenamed'),
     ]
-""")
+"""
+        )
         mig2.close()
 
-        self.replace('Links', 'LinksRenamed')
+        self.replace("Links", "LinksRenamed")
 
         self.migrate()

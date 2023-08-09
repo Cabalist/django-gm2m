@@ -1,4 +1,3 @@
-
 def patch_interactive_mig_questionner():
     """
     Prevents user input when invoking makemigrations

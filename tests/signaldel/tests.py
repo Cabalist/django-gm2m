@@ -5,7 +5,6 @@ from ..mock import mock_signal_receiver
 
 
 class SignalDeletionTests(base.TestCase):
-
     def setUp(self):
         self.project1 = self.models.Project.objects.create()
         self.project2 = self.models.Project.objects.create()

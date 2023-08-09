@@ -4,7 +4,6 @@ from .. import base
 
 
 class RelatedNameTests(base.TestCase):
-
     def setUp(self):
         self.project = self.models.Project.objects.create()
         self.links = self.models.Links.objects.create()

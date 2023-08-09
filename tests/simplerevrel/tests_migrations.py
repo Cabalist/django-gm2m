@@ -4,7 +4,6 @@ from .. import base
 
 
 class SimpleRevRelMigrationTests(base.MultiMigrationsTestCase):
-
     def test_reverse_manager_in_runpython(self):
         """
         Bug #14
@@ -17,10 +16,13 @@ class SimpleRevRelMigrationTests(base.MultiMigrationsTestCase):
         p = self.models.Project.objects.create()
         l.related_objects.add(p)
 
-        mig2 = open(os.path.join(os.path.dirname(__file__), 'migrations',
-                                 '0002_runpython.py'), 'w')
+        mig2 = open(
+            os.path.join(os.path.dirname(__file__), "migrations", "0002_runpython.py"),
+            "w",
+        )
 
-        mig2.write("""
+        mig2.write(
+            """
 from django.db import migrations
 
 
@@ -38,7 +40,8 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(call_rev_mngr, call_rev_mngr),
     ]
-""")
+"""
+        )
         mig2.close()
 
         self.migrate()

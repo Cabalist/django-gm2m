@@ -6,7 +6,6 @@ from .contenttypes import ct as ct_classes, get_content_type
 
 
 class GM2MTgtQuerySetIterable(ModelIterable):
-
     def __iter__(self):
         """
         Override to return the actual objects, not the GM2MObject
@@ -26,23 +25,25 @@ class GM2MTgtQuerySetIterable(ModelIterable):
         ordered_ct_attrs = []
 
         field_names = qs.model._meta._field_names
-        fk_field = qs.model._meta.get_field(field_names['tgt_fk'])
+        fk_field = qs.model._meta.get_field(field_names["tgt_fk"])
 
         extra_select = list(qs.query.extra_select)
 
-        for vl in qs.values_list(field_names['tgt_ct'],
-                                 field_names['tgt_fk'],
-                                 *extra_select):
+        for vl in qs.values_list(
+            field_names["tgt_ct"], field_names["tgt_fk"], *extra_select
+        ):
             ct = vl[0]
             pk = fk_field.to_python(vl[1])
             ct_attrs[ct][pk].append(vl[2:])
             ordered_ct_attrs.append((ct, pk))
 
         for ct, attrs in ct_attrs.items():
-            for pk, obj in ct_classes.ContentType.objects.get_for_id(ct).\
-                    model_class()._default_manager.in_bulk(attrs.keys()).\
-                    items():
-
+            for pk, obj in (
+                ct_classes.ContentType.objects.get_for_id(ct)
+                .model_class()
+                ._default_manager.in_bulk(attrs.keys())
+                .items()
+            ):
                 pk = fk_field.to_python(pk)
 
                 # we store the through model id in case we are in the process
@@ -87,8 +88,8 @@ class GM2MTgtQuerySet(QuerySet):
             self._iterable_class = GM2MTgtQuerySetIterable
 
     def filter(self, *args, **kwargs):
-        model = kwargs.pop('Model', None)
-        models = kwargs.pop('Model__in', set())
+        model = kwargs.pop("Model", None)
+        models = kwargs.pop("Model__in", set())
 
         if model:
             models.add(model)
@@ -100,6 +101,6 @@ class GM2MTgtQuerySet(QuerySet):
             ctypes.append(get_content_type(m).pk)
 
         if ctypes:
-            kwargs[self.model._meta._field_names['tgt_ct'] + '__in'] = ctypes
+            kwargs[self.model._meta._field_names["tgt_ct"] + "__in"] = ctypes
 
         return super(GM2MTgtQuerySet, self).filter(*args, **kwargs)

@@ -1,5 +1,5 @@
 from django.core.serializers import xml_serializer
-from django.utils.encoding import smart_text
+from django.utils.encoding import smart_str
 
 from ..fields import GM2MField
 from ..contenttypes import ct, get_content_type
@@ -12,7 +12,6 @@ class Serializer(xml_serializer.Serializer):
     """
 
     def handle_m2m_field(self, obj, field):
-
         if not isinstance(field, GM2MField):
             # use normal serialization from superclass
             super(Serializer, self).handle_m2m_field(obj, field)
@@ -20,17 +19,18 @@ class Serializer(xml_serializer.Serializer):
         if field.remote_field.through._meta.auto_created:
             self._start_relational_field(field)
             if self.use_natural_foreign_keys:
+
                 def handle_gm2m(value):
                     try:
                         natural = value.natural_key()
                         use_natural_key = True
                     except AttributeError:
-                        natural = smart_text(value._get_pk_val())
+                        natural = smart_str(value._get_pk_val())
                         use_natural_key = False
 
                     # Iterable natural keys are rolled out as subelements
                     if use_natural_key:
-                        attrs = {'pk': smart_text(value._get_pk_val())}
+                        attrs = {"pk": smart_str(value._get_pk_val())}
                     else:
                         attrs = {}
 
@@ -38,32 +38,32 @@ class Serializer(xml_serializer.Serializer):
 
                     # add content type information
                     app, model = get_content_type(value).natural_key()
-                    self.xml.addQuickElement('contenttype', attrs={
-                        'app': app,
-                        'model': model
-                    })
+                    self.xml.addQuickElement(
+                        "contenttype", attrs={"app": app, "model": model}
+                    )
 
                     if use_natural_key:
                         for key_value in natural:
                             self.xml.startElement("natural", {})
-                            self.xml.characters(smart_text(key_value))
+                            self.xml.characters(smart_str(key_value))
                             self.xml.endElement("natural")
 
                     self.xml.endElement("object")
+
             else:
+
                 def handle_gm2m(value):
-                    self.xml.startElement('object', {
-                        'pk': smart_text(value._get_pk_val())
-                    })
+                    self.xml.startElement(
+                        "object", {"pk": smart_str(value._get_pk_val())}
+                    )
 
                     # add content type information
                     app, model = get_content_type(value).natural_key()
-                    self.xml.addQuickElement('contenttype', attrs={
-                        'app': app,
-                        'model': model
-                    })
+                    self.xml.addQuickElement(
+                        "contenttype", attrs={"app": app, "model": model}
+                    )
 
-                    self.xml.endElement('object')
+                    self.xml.endElement("object")
 
             for relobj in getattr(obj, field.name).iterator():
                 handle_gm2m(relobj)
@@ -72,7 +72,6 @@ class Serializer(xml_serializer.Serializer):
 
 
 class Deserializer(xml_serializer.Deserializer):
-
     def _handle_m2m_field_node(self, node, field):
         """
         Handle a <field> node for a GM2MField
@@ -82,28 +81,26 @@ class Deserializer(xml_serializer.Deserializer):
             return super(Deserializer, self)._handle_m2m_field_node(node, field)
 
         objs = []
-        for obj_node in node.getElementsByTagName('object'):
-            natural = obj_node.getElementsByTagName('natural')
+        for obj_node in node.getElementsByTagName("object"):
+            natural = obj_node.getElementsByTagName("natural")
 
             # extract contenttype
-            ct_node = obj_node.getElementsByTagName('contenttype')[0]
+            ct_node = obj_node.getElementsByTagName("contenttype")[0]
 
             model = ct.ContentType.objects.get_by_natural_key(
-                ct_node.getAttribute('app'), ct_node.getAttribute('model')
+                ct_node.getAttribute("app"), ct_node.getAttribute("model")
             ).model_class()
             mngr = model._default_manager.db_manager(self.db)
-
 
             if natural:
                 # extract natural keys
                 key = [xml_serializer.getInnerText(k).strip() for k in natural]
             else:
                 # normal value
-                key = obj_node.getAttribute('pk')
+                key = obj_node.getAttribute("pk")
 
-            if hasattr(model._default_manager, 'get_by_natural_key'):
-                if hasattr(key, '__iter__') \
-                and not isinstance(key, str):
+            if hasattr(model._default_manager, "get_by_natural_key"):
+                if hasattr(key, "__iter__") and not isinstance(key, str):
                     obj = mngr.get_by_natural_key(*key)
                 else:
                     obj = mngr.get_by_natural_key(key)

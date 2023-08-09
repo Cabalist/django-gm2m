@@ -1,1 +1,1 @@
-default_app_config = 'tests.validaddrel.apps.AddRelationAppConfig'
+default_app_config = "tests.validaddrel.apps.AddRelationAppConfig"

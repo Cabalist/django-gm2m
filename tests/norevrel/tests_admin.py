@@ -6,12 +6,11 @@ from django.contrib.admin import ModelAdmin
 from .. import base
 
 
-class MockRequest(object):
+class MockRequest:
     pass
 
 
 class AdminTests(base.TestCase):
-
     def setUp(self):
         self.site = AdminSite()
         self.model_admin = ModelAdmin(self.models.Links, self.site)
@@ -19,32 +18,27 @@ class AdminTests(base.TestCase):
 
     def test_formfield_warning(self):
         with self.assertRaises(FutureWarning), warnings.catch_warnings():
-            warnings.filterwarnings('error', category=FutureWarning)
+            warnings.filterwarnings("error", category=FutureWarning)
             self.model_admin.get_form(MockRequest(), self.links)()
 
     def test_admin(self):
-
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             form = self.model_admin.get_form(MockRequest(), self.links)(
-                instance=self.links, data={
-                    'related_objects': ''
-                }
+                instance=self.links, data={"related_objects": ""}
             )
         self.assertTrue(form.is_valid())
 
     def test_submit_form(self):
         self.links.related_objects = [
             self.models.Project.objects.create(),
-            self.models.Task.objects.create()
+            self.models.Task.objects.create(),
         ]
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             form = self.model_admin.get_form(MockRequest(), self.links)(
-                instance=self.links, data={
-                    'related_objects': ''
-                }
+                instance=self.links, data={"related_objects": ""}
             )
         form.save()
 

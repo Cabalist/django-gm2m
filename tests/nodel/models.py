@@ -7,8 +7,7 @@ from ..app.models import Project
 
 
 class Links(models.Model):
-
     class Meta:
-        app_label = 'nodel'
+        app_label = "nodel"
 
     related_objects = gm2m.GM2MField(Project, on_delete=DO_NOTHING)

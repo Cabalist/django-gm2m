@@ -5,7 +5,6 @@ from ..mock import mock_signal_receiver
 
 
 class InheritanceDeletionTests(base.TestCase):
-
     def setUp(self):
         self.subtask = self.models.Subtask.objects.create()
         self.milestone = self.models.Milestone.objects.create()

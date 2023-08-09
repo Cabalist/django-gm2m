@@ -6,7 +6,6 @@ from .. import base
 
 
 class ValidationTests(base.TestCase):
-
-    other_apps = ('norevrel',)
+    other_apps = ("norevrel",)
 
     # test_check and test_deconstruct will be run

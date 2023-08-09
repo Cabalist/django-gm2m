@@ -10,24 +10,22 @@ from .. import base
 
 
 class FixtureTests(base.TestCase):
-
     def fixture_file(self, name):
-        return os.path.join(os.path.dirname(__file__), 'fixtures', name)
+        return os.path.join(os.path.dirname(__file__), "fixtures", name)
 
     def dump(self, fmt, to_data, **kwargs):
-        dump = self.fixture_file('dump.' + fmt)
-        ref = self.fixture_file('reference.' + fmt)
+        dump = self.fixture_file("dump." + fmt)
+        ref = self.fixture_file("reference." + fmt)
 
         try:
             project = self.models.Project.objects.create()
             links = self.models.Links.objects.create()
             links.related_objects.add(project)
 
-            call_command('dumpdata', 'app', 'norevrel',
-                         format=fmt, output=dump)
+            call_command("dumpdata", "app", "norevrel", format=fmt, output=dump)
 
-            dumpdata = to_data(open(dump, 'r'), **kwargs)
-            refdata = to_data(open(ref, 'r'), **kwargs)
+            dumpdata = to_data(open(dump), **kwargs)
+            refdata = to_data(open(ref), **kwargs)
 
             self.assertEqual(dumpdata, refdata)
 
@@ -38,26 +36,25 @@ class FixtureTests(base.TestCase):
                 pass
 
     def load(self, fmt):
-        call_command('loaddata', 'reference.' + fmt)
+        call_command("loaddata", "reference." + fmt)
         links = self.models.Links.objects.all()[0]
         project = self.models.Project.objects.all()[0]
         self.assertIn(project, links.related_objects.all())
 
     def test_dump_json(self):
-        self.dump('json', json.load)
+        self.dump("json", json.load)
 
     def test_load_json(self):
-        self.load('json')
+        self.load("json")
 
     def test_dump_xml(self):
-        self.dump('xml', lambda f: xmltodict.parse(f.read(),
-                                                   dict_constructor=dict))
+        self.dump("xml", lambda f: xmltodict.parse(f.read(), dict_constructor=dict))
 
     def test_load_xml(self):
-        self.load('xml')
+        self.load("xml")
 
     def test_dump_yaml(self):
-        self.dump('yaml', yaml.load, Loader=yaml.FullLoader)
+        self.dump("yaml", yaml.load, Loader=yaml.FullLoader)
 
     def test_load_yaml(self):
-        self.load('yaml')
+        self.load("yaml")

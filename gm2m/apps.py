@@ -3,12 +3,14 @@ from django.core import serializers
 
 
 class GM2MConfig(AppConfig):
-    name = 'gm2m'
-    verbose_name = 'Django generic many-to-many field'
+    name = "gm2m"
+    verbose_name = "Django generic many-to-many field"
 
     def ready(self):
-
+        # noinspection PyUnresolvedReferences
         from . import signals
+
+        # noinspection PyUnresolvedReferences
         from . import monkeypatch
 
         serializers.BUILTIN_SERIALIZERS = {

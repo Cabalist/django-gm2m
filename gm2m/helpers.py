@@ -21,18 +21,18 @@ def is_fake_model(model):
 # the source model, so we need to let django know about that
 
 
-class GM2MModelOptions(object):
-
+class GM2MModelOptions:
     def __init__(self):
-        self.object_name = 'ContentType'
-        self.model_name = 'contenttype'
-        self.app_label = 'contenttypes'
+        self.object_name = "ContentType"
+        self.model_name = "contenttype"
+        self.app_label = "contenttypes"
+        self.abstract = False
 
         self.concrete_fields = []
         self.pk = None
 
     def __str__(self):
-        return 'gm2m.model'
+        return "gm2m.model"
 
     @cached_property
     def concrete_model(self):
@@ -40,7 +40,6 @@ class GM2MModelOptions(object):
 
 
 class GM2MModelManager(models.Manager):
-
     def get_by_natural_key(self, ct_key, key):
         """
         Used for deserialization (this is actually a workaround to avoid
@@ -53,8 +52,8 @@ class GM2MModelManager(models.Manager):
         model = ct.ContentType.objects.get_by_natural_key(*ct_key).model_class()
         mngr = model._default_manager.db_manager(self.db)
 
-        if hasattr(model._default_manager, 'get_by_natural_key'):
-            if hasattr(key, '__iter__') and not isinstance(key, (str, bytes)):
+        if hasattr(model._default_manager, "get_by_natural_key"):
+            if hasattr(key, "__iter__") and not isinstance(key, (str, bytes)):
                 obj = mngr.get_by_natural_key(*key)
             else:
                 obj = mngr.get_by_natural_key(key)
@@ -72,7 +71,7 @@ class GM2MModelManager(models.Manager):
         return []
 
 
-class Dummy(object):
+class Dummy:
     """
     We can't derive our dummy model class from models.Model explicitly, as if we
     do it triggers all the django machinery through the metaclass. To prevent
@@ -95,8 +94,7 @@ class GM2MModelMetaclass(type):
         yield None
 
     def __eq__(cls, other):
-        return other is cls \
-               or other == RECURSIVE_RELATIONSHIP_CONSTANT
+        return other is cls or other == RECURSIVE_RELATIONSHIP_CONSTANT
 
     def lower(cls):
         return str(cls)
@@ -107,6 +105,7 @@ class GM2MModel(Dummy, metaclass=GM2MModelMetaclass):
     We need to define pk as we're using that attribute in the GM2MToManager
     above
     """
+
     pk = None
 
 

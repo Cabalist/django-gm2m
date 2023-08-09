@@ -4,9 +4,8 @@ from django.apps import AppConfig
 
 
 class AddRelationAppConfig(AppConfig):
-
-    name = 'tests.validaddrel'
-    verbose_name = 'to test validation after add_relation (#4)'
+    name = "tests.validaddrel"
+    verbose_name = "to test validation after add_relation (#4)"
 
     def ready(self):
         from tests.norevrel.models import Links

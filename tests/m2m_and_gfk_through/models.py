@@ -11,26 +11,23 @@ import gm2m
 
 
 class GM2MLinks(models.Model):
-
     class Meta:
-        app_label = 'm2m_and_gfk_through'
+        app_label = "m2m_and_gfk_through"
 
     sources = gm2m.GM2MField()
 
 
 class MembershipThrough(models.Model):
-
     class Meta:
-        app_label = 'm2m_and_gfk_through'
+        app_label = "m2m_and_gfk_through"
 
-    possibly = models.ForeignKey('Membership', on_delete=models.CASCADE)
+    possibly = models.ForeignKey("Membership", on_delete=models.CASCADE)
     link = models.ForeignKey(GM2MLinks, on_delete=models.CASCADE)
 
 
 class Membership(models.Model):
-
     class Meta:
-        app_label = 'm2m_and_gfk_through'
+        app_label = "m2m_and_gfk_through"
 
     many_link = models.ManyToManyField(GM2MLinks, through=MembershipThrough)
 
@@ -42,8 +39,8 @@ class RandomData(models.Model):
     """
 
     class Meta:
-        app_label = 'm2m_and_gfk_through'
+        app_label = "m2m_and_gfk_through"
 
     object_id = models.PositiveIntegerField()
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    my_gfk = GenericForeignKey('content_type', 'object_id')
+    my_gfk = GenericForeignKey("content_type", "object_id")

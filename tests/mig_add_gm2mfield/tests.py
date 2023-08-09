@@ -5,14 +5,13 @@ from .. import base
 
 
 class GM2MFieldAdditionTests(base.MultiMigrationsTestCase):
-
     def test_add_gm2mfield_and_migrate(self):
         # generates initial migration file 0001_initial
         self.makemigrations()
         self.migrate()
 
         # removes comment on GM2M line
-        self.replace('# mig1: ', '')
+        self.replace("# mig1: ", "")
         self.makemigrations()
 
         # check that no exception is raised when calling migrate
@@ -24,7 +23,7 @@ class GM2MFieldAdditionTests(base.MultiMigrationsTestCase):
         self.migrate()
 
         # removes comment on GM2M line
-        self.replace('# mig1: ', '')
+        self.replace("# mig1: ", "")
         self.makemigrations()
         self.migrate()
 
@@ -32,7 +31,7 @@ class GM2MFieldAdditionTests(base.MultiMigrationsTestCase):
         os.remove(self.models_path)
         copy(self.backup_path, self.models_path)
 
-        self.replace('# mig2: ', '')
+        self.replace("# mig2: ", "")
         self.makemigrations()
         # this is where it failed
         self.migrate()

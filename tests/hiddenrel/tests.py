@@ -2,7 +2,6 @@ from .. import base
 
 
 class ReverseRelationTests(base.TestCase):
-
     def setUp(self):
         self.links = self.models.Links.objects.create()
         self.project = self.models.Project.objects.create()
@@ -10,9 +9,10 @@ class ReverseRelationTests(base.TestCase):
 
     def test_reverse_access(self):
         self.assertTrue(
-            self.models.Links.related_objects.field.remote_field.rels[0].is_hidden())
+            self.models.Links.related_objects.field.remote_field.rels[0].is_hidden()
+        )
         with self.assertRaises(AttributeError):
-            getattr(self.project, 'related_links+')
+            getattr(self.project, "related_links+")
 
 
 class HiddenRelDeletionTests(base.TestCase):
@@ -29,13 +29,13 @@ class HiddenRelDeletionTests(base.TestCase):
         self.links.related_objects = [self.project1, self.project2]
         self.links.delete()
         self.assertEqual(
-            self.models.Links.related_objects.through._default_manager.count(),
-            0)
+            self.models.Links.related_objects.through._default_manager.count(), 0
+        )
 
     def test_delete_tgt(self):
         self.links.related_objects = [self.project1, self.project2]
         self.project2.delete()
         self.assertEqual(
-            self.models.Links.related_objects.through._default_manager.count(),
-            1)
+            self.models.Links.related_objects.through._default_manager.count(), 1
+        )
         self.assertEqual(self.links.related_objects.count(), 1)

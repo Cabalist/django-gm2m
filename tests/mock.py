@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import contextlib
 from unittest import mock
 
@@ -21,6 +19,7 @@ def mock_signal_receiver(signal, wraps=None, **kwargs):
     through to the signal's ``connect`` method.
     """
     if wraps is None:
+
         def wraps(*args, **kwrags):
             return None
 

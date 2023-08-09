@@ -2,7 +2,6 @@ from .. import base
 
 
 class NoRevRelTests(base.TestCase):
-
     def setUp(self):
         self.project = self.models.Project.objects.create()
         self.task1 = self.models.Task.objects.create()
@@ -11,7 +10,6 @@ class NoRevRelTests(base.TestCase):
 
 
 class OperationsTests(NoRevRelTests):
-
     def test_add(self):
         self.links.related_objects.add(self.project)
         self.assertIn(self.project, self.links.related_objects.all())
@@ -35,7 +33,6 @@ class OperationsTests(NoRevRelTests):
 
 
 class AutoReverseTests(NoRevRelTests):
-
     def test_auto_reverse_accessors(self):
         with self.assertRaises(AttributeError):
             self.assertEqual(self.project.links_set.count(), 0)

@@ -7,7 +7,7 @@ __test__ = False
 
 
 def app_mod_path(m):
-    return 'tests.' + m
+    return "tests." + m
 
 
 def del_app_models(app, app_module=False):
@@ -23,7 +23,7 @@ def del_app_models(app, app_module=False):
 
     path = app_mod_path(app)
 
-    to_del = [path + '.models']
+    to_del = [path + ".models"]
     if app_module:
         to_del.append(path)
 
@@ -34,12 +34,12 @@ def del_app_models(app, app_module=False):
             pass
 
 
-class reset_warning_registry(object):
+class reset_warning_registry:
     """
     context manager which archives & clears warning registry for duration of
     context
-    http://bugs.python.org/issue21724
-    http://bugs.python.org/file40031/reset_warning_registry.py
+    https://bugs.python.org/issue21724
+    https://bugs.python.org/file40031/reset_warning_registry.py
 
     :param pattern:
           optional regex pattern, causes manager to only reset modules whose names

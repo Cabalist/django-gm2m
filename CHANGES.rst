@@ -7,6 +7,16 @@ key:
 | \- deletion
 
 
+v2.0.0 (08-09-2023
+------------------
+| \+ Run black
+| \+ Add support for Django 4.1, 4.2
+| \+ Add support for Python 3.11
+| \+ Add Github CI
+| \- Remove zc.buildout
+| \- Remove Support for Django<3.2
+| \- Remove Support for Python<3.8
+
 v1.1.1 (05-10-2020)
 -------------------
 

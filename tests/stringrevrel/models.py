@@ -4,8 +4,7 @@ import gm2m
 
 
 class Links(models.Model):
-
     class Meta:
-        app_label = 'stringrevrel'
+        app_label = "stringrevrel"
 
-    related_objects = gm2m.GM2MField('app.Project')
+    related_objects = gm2m.GM2MField("app.Project")
